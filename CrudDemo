@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      -webkit-font-smoothing: auto;
+      -moz-font-smoothing: auto;
+      -moz-osx-font-smoothing: grayscale;
+      font-smooth: auto;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+
+<body style="margin: 0">
+  <form onsubmit="handleFormSubmit(event)">
+    <label for="username">Username</label>
+    <input type="text" name="username" id="username" />
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" />
+    <label for="phone">Phone No</label>
+    <input type="tel" name="phone" id="phone" />
+    <button type="submit">Submit</button>
+  </form>
+  <ul></ul>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+  <script>
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const userDetails = {
+        username: event.target.username.value,
+        email: event.target.email.value,
+        phone: event.target.phone.value,
+      };
+      axios
+        .post(
+          "https://crudcrud.com/api/3181bb0f8747466c81314d75f526929e/app",
+          userDetails
+        )
+        .then((response) => {
+          displayUserOnScreen(response.data);
+          event.target.reset();
+        })
+        .catch((error) => console.log(error));
+    }
+
+    function displayUserOnScreen(userDetails) {
+      const userItem = document.createElement("li");
+      userItem.appendChild(
+        document.createTextNode(
+          `${userDetails.username} - ${userDetails.email} - ${userDetails.phone}`
+        )
+      );
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.appendChild(document.createTextNode("Delete"));
+      userItem.appendChild(deleteBtn);
+
+      const updateBtn = document.createElement("button");
+      updateBtn.appendChild(document.createTextNode("Update"));
+      userItem.appendChild(updateBtn);
+
+      const userList = document.querySelector("ul");
+      userList.appendChild(userItem);
+
+      deleteBtn.addEventListener("click", function (event) {
+        deleteUser(userDetails._id, userItem);
+      });
+
+      updateBtn.addEventListener("click", function (event) {
+        updateUser(userDetails);
+      });
+    }
+
+    function deleteUser(userId, listItem) {
+      axios
+        .delete(`https://crudcrud.com/api/3181bb0f8747466c81314d75f526929e/app/${userId}`)
+        .then(() => {
+          listItem.remove();
+        })
+        .catch((error) => console.log(error));
+    }
+
+    function updateUser(userDetails) {
+      const updatedUsername = prompt("Enter updated username:", userDetails.username);
+      const updatedEmail = prompt("Enter updated email:", userDetails.email);
+      const updatedPhone = prompt("Enter updated phone number:", userDetails.phone);
+      if (updatedUsername !== null && updatedEmail !== null && updatedPhone !== null) {
+        const updatedUser = {
+          username: updatedUsername,
+          email: updatedEmail,
+          phone: updatedPhone
+        };
+
+        axios
+          .put(`https://crudcrud.com/api/3181bb0f8747466c81314d75f526929e/app/${userDetails._id}`, updatedUser)
+          .then((response) => {
+            userDetails.username = updatedUsername;
+            userDetails.email = updatedEmail;
+            userDetails.phone = updatedPhone;
+            alert("User details updated successfully!");
+          })
+          .catch((error) => console.log(error));
+      }
+    }
+
+    axios
+      .get("https://crudcrud.com/api/3181bb0f8747466c81314d75f526929e/app")
+      .then((response) => {
+        const users = response.data;
+        users.forEach((user) => {
+          displayUserOnScreen(user);
+        });
+      })
+      .catch((error) => console.log(error));
+  </script>
+
+</body>
+
+</html>
